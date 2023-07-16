@@ -1,6 +1,6 @@
 ---
 title: Codility Lesson 3 - FrogJmp
-date: 2023-07-16
+date: 2023-07-16 14:00:04
 category: Algorithm
 draft: false
 ---
@@ -40,32 +40,17 @@ D = 30
 
 ## 문제 접근
 
-_각 배열을 순회하면서 값이 몇번 나오는지 횟수 정보를 저장하고, 해당 횟수가 홀수인것을 반환한다._
+_총 이동 해야할 최소 거리를 구하여 해당 최소 거리를 D 로 나누게 된다면 최소한 점프수를 구할 수 있다._
 
-1. 배열을 순회 하면서 각 값이 나오는 횟수정보를 저장한다.
-2. 해당 배열에서 반복되는 숫자를 제거하기 위해 Set 자료구조를 이용한다.
-3. 반복되는 숫자를 제거하는 배열을 순회하면서 각 숫자의 횟수가 홀수 인것을 찾아서 반환한다.
+1. 총 이동 해야할 최소 거리를 구한다. (Y - X)
+2. 해당 최소 거리를 D로 나누고 몫을 올림 처리 하면 점프수가 나온다.
+   - 나머지 즉 몫이 소수점이 나오면 점프가 더 필요하다는 뜻이므로 소수점을 올림한다.
 
 ```javascript
-function solution(A) {
-  const info = {}
+function solution(X, Y, D) {
+  const distance = Y - X
+  const count = Math.ceil(distance / D)
 
-  A.forEach(value => {
-    if (info[value] === undefined) {
-      info[value] = 1
-    } else {
-      info[value]++
-    }
-  })
-
-  const arr = Array.from(new Set(A))
-
-  for (let i = 0; i < arr.length; i++) {
-    const key = arr[i]
-
-    if (info[key] % 2 === 1) {
-      return Number(key)
-    }
-  }
+  return count
 }
 ```
