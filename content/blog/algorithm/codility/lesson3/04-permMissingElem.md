@@ -60,3 +60,12 @@ function solution(A) {
   return totalSum - sumOfA
 }
 ```
+
+**또 다른 공식이 있다**
+
+- 1부터 n까지의 합 공식은 n(n+1)/2
+- 아래 코드로도 대신 할 수 있다.
+
+```javascript
+const totalSum = ((A.length + 1) * (A.length + 2)) / 2
+```
