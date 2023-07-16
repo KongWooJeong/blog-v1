@@ -48,32 +48,28 @@ A[6] = 9
 
 ## 문제 접근
 
-_각 배열을 순회하면서 값이 몇번 나오는지 횟수 정보를 저장하고, 해당 횟수가 홀수인것을 반환한다._
+_각 배열을 순회하면서 각 값이 존재하면 삭제하고, 존재하지 않으면 추가하는 방식으로 진행하면 마지막엔 홀수인 값만 남게 된다._
 
-1. 배열을 순회 하면서 각 값이 나오는 횟수정보를 저장한다.
-2. 해당 배열에서 반복되는 숫자를 제거하기 위해 Set 자료구조를 이용한다.
-3. 반복되는 숫자를 제거하는 배열을 순회하면서 각 숫자의 횟수가 홀수 인것을 찾아서 반환한다.
+1. 배열을 순회 하면서 해당 값이 존재하면 값을 추가.
+2. 배열을 순회 하면서 해당 값이 존재하지 않으면 값을 제거.
+3. 모든 배열을 다 순회했을때 짝수 갯수의 값은 모두 제거되 홀수 갯수인 값만 남게 된다.
+
+**자료 조회, 추가, 삭제가 효율적인 Set 자료구조를 선택**
 
 ```javascript
 function solution(A) {
-  const info = {}
+  const info = new Set()
 
-  A.forEach(value => {
-    if (info[value] === undefined) {
-      info[value] = 1
+  for (let i = 0; i < A.length; i++) {
+    if (!info.has(A[i])) {
+      info.add(A[i])
     } else {
-      info[value]++
-    }
-  })
-
-  const arr = Array.from(new Set(A))
-
-  for (let i = 0; i < arr.length; i++) {
-    const key = arr[i]
-
-    if (info[key] % 2 === 1) {
-      return Number(key)
+      info.delete(A[i])
     }
   }
+
+  const result = [...info]
+
+  return result[0]
 }
 ```
