@@ -1,6 +1,6 @@
 ---
 title: Codility Lesson 1 - BinaryGap
-date: 2023-07-16
+date: 2023-07-16 14:00:01
 category: Algorithm
 draft: false
 ---

@@ -1,6 +1,6 @@
 ---
 title: Codility Lesson 2 - OddOccurrencesInArray
-date: 2023-07-16
+date: 2023-07-16 14:00:03
 category: Algorithm
 draft: false
 ---

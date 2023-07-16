@@ -1,6 +1,6 @@
 ---
 title: Codility Lesson 2 - CyclicRotation
-date: 2023-07-16
+date: 2023-07-16 14:00:02
 category: Algorithm
 draft: false
 ---
