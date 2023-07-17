@@ -23,6 +23,7 @@ N개의 정수로 구성된 비어 있지 않은 배열 A가 주어집니다.
     A[5] = 5
     A[6] = -1
     A[7] = 2
+
 에는 다음 예제 이중 슬라이스가 포함되어 있습니다:
 
 - 이중 슬라이스 (0, 3, 6), 합계는 2 + 6 + 4 + 5 = 17입니다,
@@ -50,6 +51,7 @@ function solution(A);
     A[5] = 5
     A[6] = -1
     A[7] = 2
+
 이면 배열 A의 이중 슬라이스 중 17보다 큰 합이 없기 때문에 함수는 17을 반환해야 합니다.
 
 다음 가정에 대한 효율적인 알고리즘을 작성하십시오:
@@ -59,45 +61,45 @@ function solution(A);
 
 ## 문제 접근
 
-*Y 를 기준으로 왼쪽 부분에 대한 부분 값, 오른쪽 부분에 대한 부분 값*
+_Y 를 기준으로 왼쪽 부분에 대한 부분 값, 오른쪽 부분에 대한 부분 값_
 
-예를들면, 
+예를들면,
 
 ```
-1. Y = 2: [2] [6 - 1 + 4 + 5 - 1 + 2]
-2. Y = 3: [2 + 6] [-1 + 4 + 5 -1 + 2]
+1. Y = 2: [2] [6 - 1 ... ] 각 부분의 최댓값
+2. Y = 3: [2 + 6] [-1 + 4 ... ] 각 부분의 최댓값
 .....
 ```
 
 이렇게 나누어질 수 있다.
 
 1. 왼쪽 부분 배열, 오른쪽 부분 배열 생성
-2. 왼쪽은 index = 1 부터 left 배열에 가장 큰 값을 저장해 나간다. 
+2. 왼쪽은 index = 1 부터 left 배열에 가장 큰 값을 저장해 나간다.
 3. 오른쪽은 배열의 끝 - 2 부터 right 배열에 가장 큰값을 저장해 나간다.
 4. 마지막에는 왼쪽, 오른쪽 배열 두개를 순회하면서 가장 큰 값이 나오는 경우를 찾는다.
 
 ```javascript
 function solution(A) {
-    if (A.length <= 3) {
-        return 0;
-    }
+  if (A.length <= 3) {
+    return 0
+  }
 
-    const leftArr = new Array(A.length).fill(0);
-    const rightArr = new Array(A.length).fill(0);
-    let result = 0;
+  const leftArr = new Array(A.length).fill(0)
+  const rightArr = new Array(A.length).fill(0)
+  let result = 0
 
-    for (let i = 1; i < A.length - 1; i++) {
-        leftArr[i] = Math.max(0, leftArr[i - 1] + A[i]); 
-    }
+  for (let i = 1; i < A.length - 1; i++) {
+    leftArr[i] = Math.max(0, leftArr[i - 1] + A[i])
+  }
 
-    for (let i = A.length - 2; i > 0; i--) {
-        rightArr[i] = Math.max(0, rightArr[i + 1] + A[i]);
-    }
+  for (let i = A.length - 2; i > 0; i--) {
+    rightArr[i] = Math.max(0, rightArr[i + 1] + A[i])
+  }
 
-    for (let i = 1; i < A.length - 1; i++) {
-        result = Math.max(result, leftArr[i - 1] + rightArr[i + 1]);
-    }
+  for (let i = 1; i < A.length - 1; i++) {
+    result = Math.max(result, leftArr[i - 1] + rightArr[i + 1])
+  }
 
-    return result;
+  return result
 }
 ```
