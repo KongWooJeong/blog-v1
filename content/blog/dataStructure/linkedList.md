@@ -21,10 +21,10 @@ draft: false
 
 ```javascript
 class Node {
-    constructor(value) {
-        this.value = value;
-        this.next = null;
-    }
+  constructor(value) {
+    this.value = value;
+    this.next = null;
+  }
 }
 ```
 
@@ -36,10 +36,10 @@ class Node {
 
 ```javascript
 class LinkedList {
-    constructor() {
-        this.head = null;
-      	this.size = 0;
-    }
+  constructor() {
+    this.head = null;
+    this.size = 0;
+  }
 }
 ```
 
@@ -161,6 +161,112 @@ remove(value) {
   }
   
   return -1;
+}
+```
+
+<br/>
+
+### 전체 코드
+
+```javascript
+class Node {
+  constructor(value) {
+    this.value = value;
+    this.next = null;
+  }
+}
+
+class LinkedList {
+	constructor() {
+    this.head = null;
+    this.size = 0;
+  }
+  
+  add(value) {
+    // 노드 생성
+    const node = New Node(value);
+
+    if (this.head === null) {
+      // 현재 head 가 비어있으면 head에 node를 할당한다.
+      this.head = node; 
+    } else {
+      // 현재 노드
+      let currentNode = this.head;
+
+      // 해당 노드의 다음 값이 없을때까지 리스트를 탐색한다.
+      while (currentNode.next) {
+        currentNode = currentNode.next;
+      }
+
+      // 마지막 노드에 추가할 노드를 할당한다.
+      currentNode.next = node;
+    }
+
+    // 리스트의 크기를 증가한다.
+    this.size++;
+  }
+  
+  insertAt(value, index) {
+    if (index < 0 || index > this.size) {
+      // index가 0보다 작거나 리스트 크기보다 클때 
+      console.log("유효한 인덱스를 입력하세요.");
+    } else {
+      const node = New Node(value);
+
+      let currentNode = this.head;
+
+      if (index === 0) {
+        // 첫번째에 추가하기
+        node.next = head.next;
+        this.head = node;
+      } else {
+        let currentIndex = 0;
+        let previousNode = null;
+
+        // 리스트에서 삽입할 위치를 탐색
+        while (currentIndex < index) {
+          currentIndex++;
+          previousNode = currentNode;
+          currentNode = currentNode.next;
+        }
+
+        // 노드 추가
+        node.next = currentNode; // 노드(추가할)에 다음 요소를 현재 노드로 설정
+        previousNode.next = node; // 이전 노드에 다음 요소를 노드(추가할)로 설정
+      }
+
+      this.size++;
+    }
+  }
+  
+  remove(value) { 
+    let currentNode = this.head;
+    let previousNode = null;
+
+    // 리스트 순회
+    while (currentNode !== null) {
+      if (currentNode.value === value) {
+        if (previousNode === null) {
+          // 현재 노드가 head 일때
+          // head 에 head 다음 요소 할당(즉, head 제거)
+          this.head = currentNode.next;
+        } else {
+          // 현재 노드가 head가 아닐때
+          // 이전 노드의 next 에 현재 노드의 next 할당(즉, 현재 노드 제거)
+          previousNode.next = currentNode.next;
+        }
+
+        this.size--;
+        return currentNode.value;
+      }
+
+      // 리스트를 순회하면서 이전노드, 현재노드 계속 변경
+      previousNode = currentNode;
+      currentNode = currentNode.next;
+    }
+
+    return -1;
+  }
 }
 ```
 
