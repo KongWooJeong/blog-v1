@@ -1,0 +1,167 @@
+---
+title: 이미지 지연 로딩
+date: 2023-08-08 18:00:01
+category: 프론트엔드 성능 최적화 가이드[도서]
+draft: false
+---
+
+```
+해당 글은 "프론트엔드 최적화 가이드"라는 도서를 기반하여 작성한 글입니다.
+```
+
+저는 해당 도서에서 제공해주는 샘플코드를 이용하고 있으므로 샘플코드가 없으신분들은 최적화하는 과정에 대해서만 알고계서도 좋을것같습니다.
+
+<br/>
+
+### 네트워크 분석
+
+네트워크를 확인할 때는 명확한 흐름을 파악할 수 있도록 네트워크에 throttling을 적용합니다. 물론 기본으로 제공되는 'Fast 3G' 나 'Slow 3G' 설정을 적용 할 수 있으나 이번에는 기본 설정보다 조금 더 빠른 환경으로 설정하기 위하여 직접 커스텀 설정을 만들어 보겠습니다.
+
+![lazyImage01](./images/lazyImageLosd/lazyImage01.png)
+
+throttling 옵션엣서 'Add...'를 선택하면 Network Throttling Profiles라는 설정 페이지가 나옵니다. 여기서 'Add custom profile...' 버튼을 눌러 원하는 throttling 옵션을 추가하면 됩니다. 이번에는 '6000'이라는 이름으로 다운로드와 업로드 속도를 6000kb/s으로 설정하겠습니다.
+
+여기서 잠깐 참고하면 Fast 3G의 다운로드 속도는 1500kb/s, 업로드 속도는 750kb/s이며 Slow 3G의 다운로드 속도는 780kb/s, 업로드 속도는 330kb/s입니다.
+
+이제 이전에 설정하였던 커스텀 옵션으로 throttling을 적용하고 네트워크 분석을 해 봅시다.
+
+![lazyImage02](./images/lazyImageLosd/lazyImage02.png)
+
+위 사진에서 보듯이 처음에는 당장 필요한 리소스인 bundle 파일이 다운로드가 되고, 그 다음으로는 빨간색 박스표시가 된 이미지가 다운로드되는 것을 볼 수 있습니다. 그리고 가장 아래에 있는 빨간색 박스를 보면 banner-video 라는 파일인 해당 파일을 보시면 미디어 타입입니다. 그러 해당 banner-video는 페이지에서 가장 처음으로 사용자에게 보이는 콘텐츠인데 가장 나중에 로드되면, 사용자가 첫 화면에서 아무것도 보지 못한 채로 오랫동안 머물게 되므로 사용자 경험에 좋지 않을 겁니다.
+
+이러한 문제를 해결하는 방법은 위 사진에 보시다시피 동영상의 다운로드를 방해하는 요소 즉, 이미지 다운로드가 끝나고 동영상 다운로드를 시작하니깐 당장 사용되지 않는 이미지를 나중에 다운로드되도록 하여 동영상이 먼저 다운로드되게 하는 것입니다. 다시 말하자면 이미지를 지연 로드하는 것입니다.
+
+그러면 해당 이미지들을 페이지가 로드될 때 로드하지 않는다면 언제 로드해야 가장 좋은 방법 일까요?
+
+그 시점은 바로 이미지가 화면에 보이는 순간 또는 그 직전에 이미지를 로드해야 합니다. 다시 말해 뷰포트에 이미지가 표시될 위치까지 스크롤 되었을 때 이미지를 로드할지 말지 판단할 수 있습니다.
+
+<br/>
+
+### Intersection Observer
+
+그런데 여기서 하나 문제가 있습니다. 이미지 지연 로딩 작업을 위해 스크롤이 이동했을 때 해당 뷰포트에 이미지를 보이게 할지 판단해야 하는데, 스크롤 이벤트에 이 로직을 넣으면 스크롤할 때마다 해당 로직이 아주 많이 실행된다는 것입니다.
+
+```javascript
+window.addEventListener('scroll', () => console.log('스크롤 이벤트 발생!'))
+
+// 스크롤을 조금 움직일때 마다 엄청나게 많은 콜백함수가 실행됩니다.
+// 위 코드를 크롬 브라우저에 console 탭에서 입력하고 해당 페이지에서 스크롤을 해보십시오
+```
+
+위 코드처럼 스크롤 이벤트를 이용한다면 무거운 로직이 들어가기라도 한다면 브라우저의 메인 스레드에 무리가 갑니다. 성능을 향상시키려다가 오히려 악화시키게 되는 꼴인 거죠. 물론 throtle과 같은 방식으로 처리할 수 있겠지만, 근본적인 해결 방법이 될 수는 없습니다.
+
+> throttle은 짧은 시간에 여러 번 발생하는 연산을 일정 시간 동안 한 번만 실행하도록 하는 기술입니다.
+
+이러한 문제를 Intersection Observer를 이용하여 해결할 수 있습니다. Intersection Observer는 브라우저에서 제공하는 API입니다. 이를 통해 웹 페이지의 특정 요소를 관찰하면 페이지 스크롤 시, 해당 요소가 화면에 들어왔는지 아닌지 알려 줍니다. 즉, 스크롤 이벤트처럼 스크롤할 때마다 함수를 호출하는 것이 아니라 요소가 화면에 들어왔을 때만 함수를 호출하는 겁니다. 따라서 성능 면에서 scroll 이벤트로 판단하는 것보다 훨씬 효율적입니다.
+
+> Intersection Observer 사용법 : https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API
+
+Intersection Observer에 대하여 간략한 내용만 살펴보겠습니다.
+
+```javascript
+const options = {
+  root: null,
+  rootMargin: "0px",
+  threshold: 1.0.
+};
+
+const callback = (entries, observer) => {
+  console.log('Entries', entries);
+};
+
+const observer = new IntersectonObserver(callback, options);
+
+observer.observe(document.querySelector("#targer-element1"));
+```
+
+options는 Intersection Observer의 옵션입니다.
+
+- root: 대상 객체의 가시성을 확인할 때 사용되는 뷰포트 요소이고, 기본 값은 null 이고, null로 설정 시 브라우저의 뷰포트로 설정됩니다.
+- rootMargin: root 요소의 여백, 즉, root의 가시 범위를 가상으로 확장하거나 축소할때 사용됩니다.
+- threshold: 가시성 퍼센티지, 대상 요소가 어느 정도로 보일 때 콜백을 실행할지 결정합니다.
+
+<br/>
+
+### Intersection Observer 적용하기
+
+이미지에 Intersection Observer를 활용하여 지연 로딩을 적용해 보겠습니다.
+
+지금부터는 샘플코드 기반으로 설명 드리오니 샘플코드가 없는 분이시면 해당 내용만 알아 두시면 좋을것 같습니다.
+
+```jsx
+function Card(props) {
+  const imgRef = useRef(null);
+
+  useEffect(() => {
+    const options = {};
+    const callback = (entries, observer) => {
+      console.log('Entries', entries);
+    };
+
+    const observer = new IntersectionObserver(callback, options);
+
+    observer.observe(imgRef.current);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+	return (
+		<div className="Card text-center">
+			<img src={props.image} ref={imgRef}/>
+			{...중략...}
+		</div>
+	);
+}
+```
+
+여기서는 useEffect 안에서 Intersection Observer를 생성하였습니다. 만약 useEffect를 사용하지 않으면 렌더링할 때마다 인스턴스가 생성되고, 대상 요소를 관찰하게 되면서 대상 요소에 여러 개의 콜백이 실행될 것입니다. 따라서 이와 같은 중복을 방지하고자 useEffect에서 인스턴스를 생성해야 합니다. 또한 생성된 인스턴스는 clean-up 함수에서 `observer.disconnect` 함수를 호출함으로써 리소스가 낭비되지 않도록 합니다.
+
+![lazyImage03](./images/lazyImageLosd/lazyImage03.png)
+
+이전 코드에서 입력한 console.log 함수에 출력들을 보면 위 사진과 같습니다. entries 값이 배열 형태로 다양한 정보를 담고 있는 것이 보입니다. 이중에서 가장 중요한 값은 바로 `isIntersecting` 이라는 값입니다. 이 값은 해당 요소가 뷰포트 내에 들어왔는지를 나타내는 값입니다. 이 값을 통해 해당 요소가 화면에 보이는 것인지, 화면에서 나가는 것인지 알 수 있습니다.
+
+이제 다음은 화면에 이미지가 보이는 순간, 즉 콜백이 실행되는 순간에 이미지를 로드하는 일입니다. 이미지 로딩은 img 태그에 src가 할당되는 순간 일어납니다. 따라서 최초에는 img 태그에 src 값을 할당하지 않다가 콜백이 실행되는 순간 src를 할당함으로써 이미지 지연 로딩을 적용할 수 있습니다.
+
+```jsx
+function Card(props) {
+  const imgRef = useRef(null);
+
+  useEffect(() => {
+    const options = {};
+    const callback = (entries, observer) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          console.log("is intersecting", entry.target.dataset.src);
+          entry.target.src = entry.target.dataset.src;
+          observer.unobserve(entry.target);
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(callback, options);
+
+    observer.observe(imgRef.current);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+	return (
+		<div className="Card text-center">
+			<img data-src={props.image} ref={imgRef}/>
+			{...중략...}
+		</div>
+	);
+}
+```
+
+이전에느 img 태그에 src 속성에 바로 해당 이미지 url를 할당하였지만 위 코드에서는 data-src 라는 속성에 이미지 url을 넣었습니다. 이렇게 하면 src 값이 할당되지 않기 때문에 해당 이미지를 로드 하지 않습니다. 그리고 주소를 data-src 속성에 넣은 이유는 나중에 이미지가 뷰포트에 들어 왔을때, data-src에 있는 값을 src로 옮겨 이미지를 로드하기 위해서입니다.
+
+`entry.isIntersecting` 뷰포트에 해당 이미지가 들어왔을때 `entry.target.src = entry.target.dataset.src` 이미지 src 속성에 이미지 url을 할당합니다. 그리고 한 번 이미지를 로드한 후에는 다시 호출할 필요가 없으므로 `observer.unobserve(entry.target)` 'unobserve' 메서드를 이용하여 해제합니다.
+
+이제 정리하면, 개발자 도구 Network 패널을 확인해보면 최초 페이지 로딩 시에는 해당 이미지가 로드되지 않고 있다가 스크롤이 해당 이미지 영역에 도달하면 이미지가 로드되는 것을 확인 할 수 있습니다. 즉, 최초 페이지 로딩 시에는 보이지 않는 이미지가 우선순위가 높은 콘텐츠(동영상)의 로딩을 방해하지 않고 나중에 필요할 때 로드되는 것입니다.
+
+<br/>
