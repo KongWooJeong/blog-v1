@@ -13,7 +13,8 @@ export const Top = ({ title, location, rootPath }) => {
           {title}
         </Link>
       )}
-      <GitHubIcon />
+      {/* github 아이콘 사용하지 않음 */}
+      {/* <GitHubIcon /> */}
     </div>
   )
 }

@@ -36,22 +36,26 @@ export default ({ data, pageContext, location }) => {
       <PostTitle title={postTitle} />
       <PostDate date={date} />
       <PostContainer html={post.html} />
-      <SocialShare title={postTitle} author={author} />
-      {!!sponsor.buyMeACoffeeId && (
+      {/* 소셜 기능 사용하지 않음 */}
+      {/* <SocialShare title={postTitle} author={author} /> */}
+      {/* 스폰서 기능 사용하지 않음 */}
+      {/* {!!sponsor.buyMeACoffeeId && (
         <SponsorButton sponsorId={sponsor.buyMeACoffeeId} />
-      )}
+      )} */}
       <Elements.Hr />
-      <Bio />
+      {/* 프로필 기능 사용하지 않음 */}
+      {/* <Bio /> */}
       <PostNavigator pageContext={pageContext} />
-      {!!disqusShortName && (
+      {/* 댓글 기능 사용하지 않음 */}
+      {/* {!!disqusShortName && (
         <Disqus
           post={post}
           shortName={disqusShortName}
           siteUrl={siteUrl}
           slug={pageContext.slug}
         />
-      )}
-      {!!utterances && <Utterances repo={utterances} />}
+      )} */}
+      {/* {!!utterances && <Utterances repo={utterances} />} */}
     </Layout>
   )
 }

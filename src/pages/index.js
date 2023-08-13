@@ -53,7 +53,8 @@ export default ({ data, location }) => {
   return (
     <Layout location={location} title={siteMetadata.title}>
       <Head title={HOME_TITLE} keywords={siteMetadata.keywords} />
-      <Bio ref={bioRef} />
+      {/* 글쓴이 추가 정보 사용하지 않음으로 설정 */}
+      {/* <Bio ref={bioRef} /> */}
       <Category
         categories={categories}
         category={category}
