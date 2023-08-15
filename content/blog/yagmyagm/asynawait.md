@@ -237,46 +237,39 @@ result 변수에는 "결과"가 할당됩니다.
 앞서서 설명드린 바벨로 변환되어진 코드는 조금 복잡하니 해당 부분을 간단하게 한번 구현해보도록 하겠습니다.
 
 ```javascript
-## 간단한 setTimeout
-const timeout = (time) => {
-	return new Promise((resolve) => {
+function api(time) {
+  return new Promise(resolve => {
     setTimeout(() => {
-      console.log("setTimeout Log", time);
-    	resolve(time + 3000);
+      resolve(time);
     }, time);
-	});
-};
-
-## asyn-await 구문을 제너리이터로 표현
-function* generator() {
-	const resultA = yield timeout(1000);
-  console.log("timeout(1000)의 결과 resultA::::", 		resultA);
-
-  const resultB = yield timeout(resultA);
-  console.log("timeout(resultA)의 결과 resultB::::", 	resultB);
+  });
 }
 
-## 제너레이터 next 함수를 호출하는 함수
-function run(generator) {
-  const gen = generator();
+function _asyncToGenerator(genFunc) {
+  return function() {
+    const gen = genFunc();
 
-  const next = (result) => {
-    const info = gen.next(result);
-    const value = info.value;
+    function next(value) {
+      const genInfo = gen.next(value);
 
-    if (info.done) {
-      return true;
-    } else {
-      ## 제너레이터 객체에 done 속성이 false 이면
-      ## value(Promise 값)가 이행된 상태이면 next("프로미스의 resolve 된 값")이 호출됩니다.
-      Promise.resolve(value).then(next);
+      if (!genInfo.done) {
+        Promise.resolve(genInfo.value).then(next);
+      }
     }
-  };
 
-  next();
+    next();
+  };
 }
 
-run(generator);
+function* sample() {
+  const result = yield api(1000);
+
+  console.log(result);
+}
+
+const asyncAwaitSample = _asyncToGenerator(sample);
+
+asyncAwaitSample();
 ```
 
 <br/>
