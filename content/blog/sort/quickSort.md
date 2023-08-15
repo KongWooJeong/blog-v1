@@ -53,12 +53,11 @@ draft: false
 function partition(arr, low, high) {
   // 가장 오른쪽 값을 피벗으로 설정
   const pivot = arr[high];
-  
+
   // 피벗 왼쪽에 작은 요소들을 넣기 위한 index
   let i = low - 1;
-   
+
   for (let j = low; j <= high - 1; j++) {
-    
     // 피벗보다 작은 요소를 찾아
     if (arr[j] < pivot) {
       // Increment index of smaller element
@@ -68,8 +67,8 @@ function partition(arr, low, high) {
   }
 
   // 피벗을 알맞은 위치에 넣기
-  [arr[i + 1], pivot] = [pivot, arr[i + 1]];
-  
+  [arr[i + 1], arr[high]] = [arr[high], arr[i + 1]];
+
   // 피벗을 반환한다
   return i + 1;
 }
@@ -78,17 +77,17 @@ function quickSort(arr, low, high) {
   if (low >= high) {
     return;
   }
-  
+
   // 분할
-  const pivot = partition(arr, low, hight);
-  
+  const pivot = partition(arr, low, high);
+
   // 피벗 기준을 왼쪽, 오른쪽 배열을 재귀적으로 호출하여 정렬하는 과정 (정복)
   quickSort(arr, low, pivot - 1);
   quickSort(arr, pivot + 1, high);
 }
 
 const arr = [10, 7, 8, 9, 1, 5];
- 
+
 quickSort(arr, 0, arr.length - 1);
 ```
 
